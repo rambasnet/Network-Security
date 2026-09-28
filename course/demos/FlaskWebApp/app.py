@@ -10,5 +10,7 @@ def hello_world():
 
 if __name__ == "__main__":
     ip = '192.168.35.130'
-    # app.run(host=ip, port=5000, debug=True)
-    app.run(debug=True)
+    port = 5555
+    app.run(host=ip, port=port, debug=True)
+    # flak run --host=ip --port=5555
+    # app.run(debug=True)

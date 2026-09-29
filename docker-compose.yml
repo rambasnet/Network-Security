@@ -21,11 +21,10 @@ services:
         ipv4_address: 192.168.100.10
     tty: true
     command:
-      [
-        "/bin/bash",
-        "-c",
-        "jupyter notebook --allow-root --ip=192.168.100.10 --port=8888",
-      ]
+      - bash
+      - -c
+      - |
+        jupyter notebook --allow-root --ip=192.168.100.10 --port=8888
 
   server:
     build:

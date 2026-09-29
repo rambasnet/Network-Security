@@ -13,7 +13,12 @@ services:
     volumes:
       - ./volumes:/volumes
     network_mode: host
-    command: bash -c "iptables -I OUTPUT -p tcp --tcp-flags RST RST -j DROP"
+    command:
+      - bash
+      - -c
+      - |
+        iptables -I OUTPUT -p tcp --tcp-flags RST RST -j DROP
+        sleep infinity
 
   server:
     build:
@@ -36,9 +41,12 @@ services:
     networks:
       net-10.9.0.0:
         ipv4_address: 10.9.0.5
-    command: bash -c "echo 'Some [top secret] data' > ~/secret.txt &&
-      /etc/init.d/openbsd-inetd start  &&
-      tail -f /dev/null"
+    command:
+      - bash
+      - -c
+      - |
+        echo 'Some [top secret] data' > ~/secret.txt
+        sleep infinity
 
   user1:
     build:

@@ -1,0 +1,47 @@
+FROM ubuntu:24.04
+
+RUN apt update \
+  && DEBIAN_FRONTEND=noninteractive apt install -y \
+  --no-install-recommends \
+  inetutils-telnetd openbsd-inetd vsftpd \
+  python3 python3-pip python3-venv python-is-python3\
+  telnet ftp iproute2 iputils-ping net-tools \
+  ncat iptables\
+  && rm -rf /var/lib/apt/lists/*
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
+COPY server-requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+# Disposable lab account for both Telnet and FTP
+RUN if ! id -u student >/dev/null 2>&1; then \
+  useradd --create-home --shell /bin/bash student; \
+  fi \
+  && echo 'student:student' | chpasswd
+
+# Start Telnet through inetd
+RUN printf '%s\n' \
+  'telnet stream tcp nowait root /usr/sbin/telnetd telnetd' \
+  > /etc/inetd.conf
+
+# Standalone FTP server with local-user login
+RUN printf '%s\n' \
+  'listen=YES' \
+  'listen_ipv6=NO' \
+  'background=NO' \
+  'anonymous_enable=NO' \
+  'local_enable=YES' \
+  'write_enable=YES' \
+  'pam_service_name=vsftpd' \
+  'secure_chroot_dir=/var/run/vsftpd/empty' \
+  'ssl_enable=NO' \
+  'pasv_enable=YES' \
+  'pasv_min_port=30000' \
+  'pasv_max_port=30010' \
+  > /etc/vsftpd.conf
+
+EXPOSE 21 23 30000-30010
+
+CMD ["/bin/bash", "-c", "mkdir -p /var/run/vsftpd/empty && /usr/sbin/inetd && exec /usr/sbin/vsftpd /etc/vsftpd.conf"]

@@ -31,7 +31,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.ubuntu
-    image: server
+    image: ubuntu
     container_name: server
     hostname: server
     tty: true
@@ -56,7 +56,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.alpine
-    image: lab-client
+    image: alpine
     container_name: client
     hostname: client
     tty: true

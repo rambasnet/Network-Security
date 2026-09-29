@@ -1,0 +1,6 @@
+FROM alpine:3.22
+
+# telnet and ftp clients; ping is already included.
+RUN apk add --no-cache busybox-extras inetutils-ftp
+
+CMD ["/bin/sh"]

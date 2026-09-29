@@ -1,9 +1,8 @@
+version: "3"
+
 services:
   attacker:
-    build:
-      context: .
-      dockerfile: Dockerfile.kali
-    image: kali
+    image: handsonsecurity/seed-ubuntu:large
     container_name: attacker
     hostname: attacker
     tty: true
@@ -13,13 +12,9 @@ services:
     volumes:
       - ./volumes:/volumes
     network_mode: host
-    command: bash -c "iptables -I OUTPUT -p tcp --tcp-flags RST RST -j DROP"
 
   server:
-    build:
-      context: .
-      dockerfile: Dockerfile.ubuntu
-    image: ubuntu
+    image: handsonsecurity/seed-ubuntu:large
     container_name: server
     hostname: server
     tty: true
@@ -28,29 +23,46 @@ services:
     privileged: true
     volumes:
       - ./volumes:/volumes
-      - ../FlaskWebApp:/app
     sysctls:
       - net.ipv4.tcp_syncookies=0
-      - net.ipv4.tcp_max_syn_backlog=1
-      - net.ipv4.tcp_synack_retries=2
+      - net.ipv4.tcp_max_syn_backlog=64
+      - net.ipv4.tcp_synack_retries=100
     networks:
       net-10.9.0.0:
         ipv4_address: 10.9.0.5
-    command: bash -c "echo 'Some [top secret] data' > ~/secret.txt &&
+    command: bash -c "echo 'Some secret data' > /home/seed/secret.txt &&
       /etc/init.d/openbsd-inetd start  &&
       tail -f /dev/null"
 
   user1:
-    build:
-      context: .
-      dockerfile: Dockerfile.alpine
-    image: alpine
-    container_name: client
-    hostname: client
+    image: handsonsecurity/seed-ubuntu:large
+    container_name: user1
+    hostname: user1
     tty: true
+    cap_add:
+      - ALL
     networks:
       net-10.9.0.0:
         ipv4_address: 10.9.0.6
+
+    command: bash -c "
+      /etc/init.d/openbsd-inetd start  &&
+      tail -f /dev/null"
+
+  user2:
+    image: handsonsecurity/seed-ubuntu:large
+    container_name: user2
+    hostname: user2
+    tty: true
+    cap_add:
+      - ALL
+    networks:
+      net-10.9.0.0:
+        ipv4_address: 10.9.0.7
+
+    command: bash -c "
+      /etc/init.d/openbsd-inetd start  &&
+      tail -f /dev/null"
 
   firefox:
     image: jlesage/firefox

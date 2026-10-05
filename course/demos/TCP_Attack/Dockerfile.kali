@@ -3,9 +3,9 @@ FROM kalilinux/kali-rolling
 RUN apt update --error-on=any \
     && apt install -y --no-install-recommends \
     time curl git nano \
-    net-tools iputils-ping iproute2 sudo gdb less \
+    net-tools iputils-ping iproute2 gdb less \
     python3 python3-pip python3-venv python-is-python3 \
-    dsniff tcpdump iptables\
+    dsniff tcpdump iptables gcc netcat-traditional build-essential \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
 

@@ -46,6 +46,9 @@ services:
       - -c
       - |
         echo 'Some [top secret] data' > ~/secret.txt
+        mkdir -p /var/run/vsftpd/empty
+        /usr/sbin/inetd
+        exec /usr/sbin/vsftpd /etc/vsftpd.conf
         sleep infinity
 
   user1:

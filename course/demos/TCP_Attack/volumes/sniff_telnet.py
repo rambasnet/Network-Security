@@ -11,7 +11,7 @@ change IFACE to the correct interface name
 from scapy.all import IP, TCP, sniff
 
 # FIXME: Change this to the correct interface
-IFACE = 'br-2b8b041dc023'
+IFACE = 'br-e1f94e37dcc4'
 
 
 def telnet_sniffer(packet):

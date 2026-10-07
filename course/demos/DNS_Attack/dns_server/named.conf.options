@@ -23,7 +23,7 @@ options {
 	// Added/Modified for SEED labs
 	// dnssec-validation auto;
 	dnssec-validation no;
-	dnssec-enable no;
+	// dnssec-enable no;  // removed in BIND 9.18+; dnssec-validation no is sufficient
 	dump-file "/var/cache/bind/dump.db";
 	query-source port         33333;
 

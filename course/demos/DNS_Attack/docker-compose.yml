@@ -2,7 +2,8 @@ version: "3"
 
 services:
   router:
-    image: handsonsecurity/seed-ubuntu:large
+    build: ./base
+    image: dns-lab-base
     container_name: router-11
     hostname: router-11
     tty: true
@@ -54,7 +55,8 @@ services:
       /start.sh"
 
   attacker:
-    image: handsonsecurity/seed-ubuntu:large
+    build: ./base
+    image: dns-lab-base
     container_name: attacker
     hostname: attacker
     tty: true

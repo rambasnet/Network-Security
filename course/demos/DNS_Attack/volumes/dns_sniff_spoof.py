@@ -1,7 +1,24 @@
 #!/usr/bin/env python3
 
-from scapy.all import DNS, IP, sniff, UDP, DNSRR, send
-IFACE = 'br-df7a55cb9efa'  # FIXME : Change this to 10.9.0.1 network interface
+from scapy.all import DNS, IP, sniff, UDP, DNSRR, send, get_if_addr, get_if_list
+
+
+def find_iface(bridge_ip='10.9.0.1'):
+    """Auto-detect the host bridge interface backing net-10.9.0.0 (its
+    address is 10.9.0.1), instead of hard-coding a br-<id> name that changes
+    whenever the Docker network is recreated."""
+    for iface in get_if_list():
+        try:
+            if get_if_addr(iface) == bridge_ip:
+                return iface
+        except Exception:
+            continue
+    raise SystemExit(
+        f"Could not find the interface for {bridge_ip}. Is the lab running, "
+        "and is this container started with network_mode: host?")
+
+
+IFACE = find_iface()
 # Sniff UDP query packets and invoke spoof_dns().
 # Spoof the DNS response to www.example.net for the query packets
 FILTER = 'udp and dst port 53'

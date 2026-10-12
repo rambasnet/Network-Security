@@ -9,4 +9,8 @@ $TTL    3D
 
 101     IN      PTR   www.attacker32.com.
 102     IN      PTR   abc.attacker32.com.
-110     IN      PTR   *.attacker32.com.
+; A PTR record's data must be a single concrete hostname. A wildcard such as
+; "*.attacker32.com." is an illegal host name, so BIND's default
+; "check-names master fail" refuses to load the whole zone (SERVFAIL on every
+; reverse lookup). Use a real name instead.
+110     IN      PTR   other.attacker32.com.

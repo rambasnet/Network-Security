@@ -10,9 +10,16 @@ options {
 	// Uncomment the following block, and insert the addresses replacing 
 	// the all-0's placeholder.
 
-	// forwarders {
-	// 	0.0.0.0;
-	// };
+	// Forward anything NOT covered by a local zone to a public resolver, so
+	// real sites resolve from inside the lab. Full recursion to the root
+	// servers does not work under Docker Desktop's NAT with the fixed
+	// query-source port below, but forwarding (a single flow to one upstream)
+	// does. The lab's own forward zones (example.com -> 10.9.0.153, etc.)
+	// override this, so the attack demos are unaffected.
+	forwarders {
+		8.8.8.8;
+		1.1.1.1;
+	};
 
 	//========================================================================
 	// If BIND logs error messages about the root key being expired,

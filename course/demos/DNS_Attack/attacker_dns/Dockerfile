@@ -9,7 +9,7 @@ RUN apt update \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy the configuration and zone files
-COPY named.conf  zone_attacker32.com  zone_example.com  /etc/bind/
+COPY named.conf  zone_attacker32.com  zone_example.com  zone_example.net  /etc/bind/
 COPY zone_192.168.0 /etc/bind/
 
 # Validate the configuration at build time

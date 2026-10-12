@@ -1,0 +1,13 @@
+options {
+	directory "/var/cache/bind";
+
+	// Authoritative-only server: no recursion, no DNSSEC validation needed.
+	dnssec-validation no;
+	recursion no;
+
+	allow-query { any; };
+
+	listen-on-v6 { any; };
+
+	empty-zones-enable no;
+};

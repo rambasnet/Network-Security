@@ -24,7 +24,7 @@ IFACE = find_iface()
 FILTER = 'udp and dst port 53'
 DOMAIN = 'www.example.net'
 # Pick an IP address to which the DNS response should be spoofed
-SPOOFED_IP = '208.67.220.220'  # Open DNS IP address
+SPOOFED_IP = '192.168.100.100'  # '208.67.220.220'  # Open DNS IP address
 
 
 def spoof_dns(pkt):

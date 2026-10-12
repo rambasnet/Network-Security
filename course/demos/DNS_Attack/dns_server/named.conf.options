@@ -32,7 +32,15 @@ options {
 	dnssec-validation no;
 	// dnssec-enable no;  // removed in BIND 9.18+; dnssec-validation no is sufficient
 	dump-file "/var/cache/bind/dump.db";
-	query-source port         33333;
+	// A fixed source port (e.g. `query-source port 33333;`) is a classic
+	// "predictable source port" teaching point, but on Docker Desktop its
+	// user-space NAT (gvproxy) does not reliably return replies to a
+	// long-lived fixed port, which breaks forwarding/recursion after a
+	// Docker restart. Leaving it unset (ephemeral ports) makes Internet
+	// resolution reliable; the attack demos do not depend on it (the spoof
+	// scripts read the source port off the sniffed packet). On a native
+	// Linux SEED VM you can re-enable it to demonstrate the concept.
+	// query-source port 33333;
 
 	// Access control
 	allow-query { any; };

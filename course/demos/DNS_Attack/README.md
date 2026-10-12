@@ -239,11 +239,17 @@ This lab is tuned for **Docker Desktop on macOS**, whose user-space network stac
 - **Scapy scripts auto-detect the capture interface** by finding the NIC that
   holds `10.9.0.1` (the lab bridge). You do **not** need to hard-code a
   `br-xxxxxxxx` name — it changes whenever the Docker network is recreated.
-- **The resolver cannot do full Internet recursion** here: with the fixed
-  `query-source port 33333` (kept as a teaching point about predictable source
-  ports), Docker Desktop's NAT drops the many concurrent root/TLD replies.
-  That is why the resolver uses `forwarders { 8.8.8.8; 1.1.1.1; }` for
-  non-lab domains — forwarding is a single flow and works fine.
+- **The resolver uses a public forwarder** (`forwarders { 8.8.8.8; 1.1.1.1; }`)
+  for non-lab domains instead of full root recursion, which Docker Desktop's NAT
+  cannot complete.
+- **Do not set a fixed `query-source port`** (e.g. `query-source port 33333;`)
+  on Docker Desktop. Its user-space NAT (gvproxy) does not reliably return
+  replies to a long-lived fixed port, so Internet resolution breaks — often
+  only *after* a Docker restart. `named` is left to use ephemeral ports. The
+  "predictable source port" idea can still be discussed, or re-enabled on a
+  native Linux SEED VM; the attack demos never depend on it. Symptom when this
+  regresses: `ping <IP>` works but `ping <name>` fails, and
+  `dig <anything> @10.9.0.53` times out while the lab zones still resolve.
 - **`ping <name>` failing but `ping <IP>` working** means DNS, not connectivity.
   Check that `dns-server-53` is up and that the name is covered by a lab zone or
   the forwarder.

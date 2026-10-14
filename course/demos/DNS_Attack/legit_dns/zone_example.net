@@ -11,6 +11,6 @@ ns      IN      A     10.9.0.54            ; this legitimate name server
 
 ; The genuine records a client SHOULD get when the attack is NOT running.
 ; 93.184.216.34 is the well-known "example" address (the real site).
-@       IN      A     93.184.216.34
-www     IN      A     93.184.216.34
-mail    IN      A     93.184.216.35
+@       IN      A     4.4.4.4
+www     IN      A     4.4.4.4
+mail    IN      A     4.4.4.5

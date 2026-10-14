@@ -93,17 +93,17 @@ docker exec -it attacker bash     # attacker (scripts are in /volumes)
 
 ```bash
 # Victim client can resolve the lab zones (via the resolver 10.9.0.53):
-docker exec user-5 dig +short www.example.com     @10.9.0.53   # 8.8.8.8  (rogue record)
+docker exec user-5 dig +short www.example.com     @10.9.0.53   # 4.3.2.1  (rogue record)
 docker exec user-5 dig +short www.attacker32.com  @10.9.0.53   # 192.168.0.101
 docker exec user-5 dig +short -x 192.168.0.101    @10.9.0.53   # www.attacker32.com.
-docker exec user-5 dig +short www.example.net     @10.9.0.53   # 93.184.216.34  (HONEST)
+docker exec user-5 dig +short www.example.net     @10.9.0.53   # 4.4.4.4  (HONEST)
 
 # Real Internet names resolve too (via forwarders), and connectivity works:
 docker exec user-5 dig +short google.com @10.9.0.53
 docker exec user-5 ping -c1 google.com
 ```
 
-If `www.example.net` returns `93.184.216.34`, the honest path is working and
+If `www.example.net` returns `4.4.4.4`, the honest path is working and
 you are ready to attack it.
 
 ---

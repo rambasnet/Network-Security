@@ -8,6 +8,6 @@ $TTL 3D
 
 @       IN      NS    10.9.0.153
 @       IN      A     1.2.3.4
-www     IN      A     8.8.8.8
+www     IN      A     4.3.2.1
 ns      IN      A     10.9.0.153
 *       IN      A     1.2.3.6

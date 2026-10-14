@@ -24,8 +24,8 @@ DNS, so the attack demos are deterministic and repeatable in class.
  user-5        dns-server-53   legit-dns-54   attacker-dns-153     firefox
  10.9.0.5       10.9.0.53       10.9.0.54       10.9.0.153        10.9.0.100
  (victim       (local caching  (honest         (attacker's        (GUI browser,
-  client)       resolver)       example.net     rogue name         DNS=10.9.0.53)
-                                authority)      server)
+  client,       resolver)       example.net     rogue name         DNS=10.9.0.53)
+ (DNS=...0.53)                   authority)      server)
 
  attacker  ── network_mode: host ──▶ sees the whole 10.9.0.0 LAN (sniff + spoof)
 ```
@@ -38,28 +38,28 @@ on-path attacks possible.
 
 ## 2. Services
 
-| Service        | Container          | IP            | Role |
-|----------------|--------------------|---------------|------|
-| `router`       | `router-11`        | 10.9.0.11 / 10.8.0.11 | Gateway + NAT between the lab LAN and the outside. |
-| `dns-server`   | `dns-server-53`    | 10.9.0.53     | The **victim** local caching resolver. This is what `user-5` and `firefox` use. |
-| `user`         | `user-5`           | 10.9.0.5      | The **victim client**. Uses `10.9.0.53` for DNS. Where you run `dig`/`ping`. |
-| `legit-dns`    | `legit-dns-54`     | 10.9.0.54     | The **honest** authoritative server for `example.net` (serves the real records). Has an 80 ms simulated WAN delay so the local attacker wins the race. |
-| `attacker-dns` | `attacker-dns-153` | 10.9.0.153    | The **attacker's rogue** authoritative server (`attacker32.com`, `example.com`, rogue `example.net`, and the reverse zone). |
-| `attacker`     | `attacker`         | host network  | The **attacker** box. Runs the Scapy scripts in `volumes/`. Sniffs/injects on the LAN. |
-| `firefox`      | `firefox`          | 10.9.0.100    | Optional GUI browser (open `http://localhost:5800`) to *see* a hijack in a browser. |
+| Service        | Container          | IP                    | Role                                                                                                                                                   |
+| -------------- | ------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `router`       | `router-11`        | 10.9.0.11 / 10.8.0.11 | Gateway + NAT between the lab LAN and the outside.                                                                                                     |
+| `dns-server`   | `dns-server-53`    | 10.9.0.53             | The **victim** local caching resolver. This is what `user-5` and `firefox` use.                                                                        |
+| `user`         | `user-5`           | 10.9.0.5              | The **victim client**. Uses `10.9.0.53` for DNS. Where you run `dig`/`ping`.                                                                           |
+| `legit-dns`    | `legit-dns-54`     | 10.9.0.54             | The **honest** authoritative server for `example.net` (serves the real records). Has an 80 ms simulated WAN delay so the local attacker wins the race. |
+| `attacker-dns` | `attacker-dns-153` | 10.9.0.153            | The **attacker's rogue** authoritative server (`attacker32.com`, `example.com`, rogue `example.net`, and the reverse zone).                            |
+| `attacker`     | `attacker`         | host network          | The **attacker** box. Runs the Scapy scripts in `volumes/`. Sniffs/injects on the LAN.                                                                 |
+| `firefox`      | `firefox`          | 10.9.0.100            | Optional GUI browser (open `http://localhost:5800`) to _see_ a hijack in a browser.                                                                    |
 
 ### How the resolver (`dns-server-53`) is configured
 
 `dns_server/named.conf` makes the victim resolver answer these zones from lab
 servers instead of the real Internet:
 
-| Zone | Resolved via | Purpose |
-|------|--------------|---------|
-| `example.com` | forward → `10.9.0.153` (attacker-dns) | Rogue-forwarder demo |
-| `attacker32.com` | forward → `10.9.0.153` (attacker-dns) | Rogue-forwarder demo |
-| `0.168.192.in-addr.arpa` | forward → `10.9.0.153` (attacker-dns) | Reverse (PTR) demo |
-| `example.net` | forward → `10.9.0.54` (legit-dns) | **Cache-poisoning target** (honest server the attacker races) |
-| everything else | `forwarders { 8.8.8.8; 1.1.1.1; }` | Real sites resolve (so `ping google.com` works) |
+| Zone                     | Resolved via                          | Purpose                                                       |
+| ------------------------ | ------------------------------------- | ------------------------------------------------------------- |
+| `example.com`            | forward → `10.9.0.153` (attacker-dns) | Rogue-forwarder demo                                          |
+| `attacker32.com`         | forward → `10.9.0.153` (attacker-dns) | Rogue-forwarder demo                                          |
+| `0.168.192.in-addr.arpa` | forward → `10.9.0.153` (attacker-dns) | Reverse (PTR) demo                                            |
+| `example.net`            | forward → `10.9.0.54` (legit-dns)     | **Cache-poisoning target** (honest server the attacker races) |
+| everything else          | `forwarders { 8.8.8.8; 1.1.1.1; }`    | Real sites resolve (so `ping google.com` works)               |
 
 ---
 
@@ -122,11 +122,11 @@ docker exec user-5 dig +short abc.attacker32.com  @10.9.0.53   # 192.168.0.102
 docker exec user-5 dig +short -x 192.168.0.101    @10.9.0.53   # reverse lookup, too
 ```
 
-Compare with the *truth* served by the attacker's zone files in
+Compare with the _truth_ served by the attacker's zone files in
 `attacker_dns/zone_*` — the client has no way to tell these are rogue.
 
 **Talking point:** this is the baseline threat. The next two demos show how an
-attacker who is only *on the network* (not controlling the resolver) can achieve
+attacker who is only _on the network_ (not controlling the resolver) can achieve
 the same thing.
 
 ---
@@ -181,7 +181,7 @@ fails to connect to `192.168.0.100`, which still demonstrates the redirect.
 
 ## 8. Demo 3 — Local DNS sniff-and-spoof
 
-**Idea:** instead of poisoning the cache, the attacker forges a reply to *any*
+**Idea:** instead of poisoning the cache, the attacker forges a reply to _any_
 DNS query it sees for the target name, racing the legitimate responder. This
 spoofs the answer for the immediate query (and can poison the resolver too).
 
@@ -245,7 +245,7 @@ This lab is tuned for **Docker Desktop on macOS**, whose user-space network stac
 - **Do not set a fixed `query-source port`** (e.g. `query-source port 33333;`)
   on Docker Desktop. Its user-space NAT (gvproxy) does not reliably return
   replies to a long-lived fixed port, so Internet resolution breaks — often
-  only *after* a Docker restart. `named` is left to use ephemeral ports. The
+  only _after_ a Docker restart. `named` is left to use ephemeral ports. The
   "predictable source port" idea can still be discussed, or re-enabled on a
   native Linux SEED VM; the attack demos never depend on it. Symptom when this
   regresses: `ping <IP>` works but `ping <name>` fails, and
